@@ -6,5 +6,20 @@
 
 <div class="text-center">
     <h1 class="display-4">Launch Azure Storage Process</h1>
-    
+
 </div>
+
+
+
+<form method="post" enctype="multipart/form-data">
+    <label for="FormData">Some data: </label>
+    <input type="text" asp-for="FormData" placeholder="Bobo likes to eat hoho">
+    @* <input type="text" id="FormData" placeholder="Bobo likes to eat hoho"> *@
+    <br>
+    <br>
+    @* <input type="file" id="Upload" /> *@
+    <input type="file" asp-for="Upload" />
+    <br>
+    <br>
+    <input type="submit" />
+</form>
