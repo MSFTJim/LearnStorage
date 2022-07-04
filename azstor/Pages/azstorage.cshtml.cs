@@ -37,27 +37,41 @@ public class azstorageModel : PageModel
     {
         var ms = new MemoryStream();
         var ms_t = new MemoryStream();
+        
         Boolean OverWrite = true;
+
+        if (Upload.Length > 0)
+            await Upload.CopyToAsync(ms);
+
+        string[] FileNameParts = Upload.FileName.Split('.');
+
 
         string StorageConnectionString = _configuration["AZURE_STORAGE_CONNECTION_STRING"];
         string CocktailImageContainer = _configuration["CocktailImageContainer"];
-        string fileName = "cocktail" + Guid.NewGuid().ToString() + ".jpg";
-        //fileName = "cocktail" + ".jpg";
+        string fileName = Guid.NewGuid().ToString() + "-" +  FileNameParts[0];
+        string fileExtension = ".jpg";
+        string fileThumb = "_t";
+        //fileName = "owl" + ".jpg";        
 
         BlobContainerClient containerClient = new BlobContainerClient(StorageConnectionString, CocktailImageContainer);
-        BlobClient blobClient = containerClient.GetBlobClient(fileName);
+        BlobClient blobClient = containerClient.GetBlobClient(fileName + fileExtension);
 
-        ms.Position=0;
-        await blobClient.UploadAsync(ms);
-        
-        // ms.Position=0;
-        // using Image UploadThumb = Image.ThumbnailStream(ms,128,crop: Enums.Interesting.Attention);
-        // //UploadThumb.WriteToFile(imagePath + imageName + "Att" + imageExt);
-        // UploadThumb.WriteToStream(ms_t,"jpg");       
+        ms.Position = 0;
+        await blobClient.UploadAsync(ms, OverWrite);
+
+        ms.Position = 0;
+        using Image UploadThumb = Image.ThumbnailStream(ms, width: 128, height: 128, crop: Enums.Interesting.Attention);
         
 
-        // await blobClient.UploadAsync(ms_t,OverWrite);
-        
+        blobClient = containerClient.GetBlobClient(fileName + fileThumb + fileExtension);
+        //await blobClient.UploadAsync("./images/thumb.jpg",OverWrite);
+        //UploadThumb.Close();
+        //UploadThumb
+        //ms_t.Position=0;       
+        UploadThumb.WriteToStream(ms_t, ".jpg");
+        ms_t.Position = 0;
+        await blobClient.UploadAsync(ms_t, OverWrite);
+
 
     }
 
