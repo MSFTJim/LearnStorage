@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using System.IO;
+using NetVips;
 
 namespace azstor.Pages;
 
@@ -34,34 +35,30 @@ public class azstorageModel : PageModel
 
     public async Task OnPostAsync()
     {
-        // do something with FormData
-
-        // if (string.IsNullOrEmpty(FormData))
-        {
-            // To Do
-        };
-
         var ms = new MemoryStream();
-        if (Upload.Length > 0)
-        {
-            await Upload.CopyToAsync(ms);
-
-        }
-
-        // if (Upload.Length > 0)        
-        //     using (var ms = new MemoryStream())        
-        //         await Upload.CopyToAsync(ms);
-
+        var ms_t = new MemoryStream();
+        Boolean OverWrite = true;
 
         string StorageConnectionString = _configuration["AZURE_STORAGE_CONNECTION_STRING"];
         string CocktailImageContainer = _configuration["CocktailImageContainer"];
         string fileName = "cocktail" + Guid.NewGuid().ToString() + ".jpg";
+        //fileName = "cocktail" + ".jpg";
 
         BlobContainerClient containerClient = new BlobContainerClient(StorageConnectionString, CocktailImageContainer);
         BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
         ms.Position=0;
         await blobClient.UploadAsync(ms);
+        
+        // ms.Position=0;
+        // using Image UploadThumb = Image.ThumbnailStream(ms,128,crop: Enums.Interesting.Attention);
+        // //UploadThumb.WriteToFile(imagePath + imageName + "Att" + imageExt);
+        // UploadThumb.WriteToStream(ms_t,"jpg");       
+        
+
+        // await blobClient.UploadAsync(ms_t,OverWrite);
+        
+
     }
 
     public async Task UploadToStorage()
