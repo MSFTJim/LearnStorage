@@ -9,6 +9,7 @@ namespace azstor.Pages;
 public class ErrorModel : PageModel
 {
     public string? RequestId { get; set; }
+    public string? SenderMsg { get; set; }
 
     public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
@@ -19,9 +20,12 @@ public class ErrorModel : PageModel
         _logger = logger;
     }
 
-    public void OnGet()
+    public void OnGet(string errorFromCaller)
     {
         RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+
+         SenderMsg = errorFromCaller ?? "Improbability Error";
+         
     }
 }
 

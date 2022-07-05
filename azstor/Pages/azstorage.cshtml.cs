@@ -11,10 +11,14 @@ namespace azstor.Pages;
 public class azstorageModel : PageModel
 {
     private readonly IConfiguration _configuration;
+    private readonly long _fileSizeLimit;
+    private string errorMsg = "All Good";
+    private string[] permittedExtensions = new string[] { ".gif", ".png", ".jpg", ".jpeg" };
 
     public azstorageModel(IConfiguration configuration)
     {
         _configuration = configuration;
+        _fileSizeLimit = _configuration.GetValue<long>("FileSizeLimit");
 
     }
     [BindProperty]
@@ -28,80 +32,131 @@ public class azstorageModel : PageModel
 
     public void OnGet()
     {
-        int dog = 0;
-        dog++;
+       
 
     }
 
-    public async Task OnPostAsync()
+
+
+    public async Task<IActionResult> OnPostAsync()
     {
         var ms = new MemoryStream();
-        var ms_t = new MemoryStream();
-        
-        Boolean OverWrite = true;
 
-        if (Upload.Length > 0)
+        if ((Upload.Length > 0) && (Upload.Length < _fileSizeLimit))
+        {
             await Upload.CopyToAsync(ms);
+            errorMsg = "Process was good";
+            //return Redirect("/Error?errorFromCaller=" + errorMsg);
+        }
+        else
+        {
+            errorMsg = "File size invalid";
+            return Redirect("/Error?errorFromCaller=" + errorMsg);
+        }
 
-        string[] FileNameParts = Upload.FileName.Split('.');
 
+        if (IsValidFileExtensionAndSignature(Upload.FileName, ms, permittedExtensions))
+        {
+            await WritetoAzureStorage(ms,Upload.FileName);
+            return Redirect("/Index");
 
-        string StorageConnectionString = _configuration["AZURE_STORAGE_CONNECTION_STRING"];
-        string CocktailImageContainer = _configuration["CocktailImageContainer"];
-        string fileName = Guid.NewGuid().ToString() + "-" +  FileNameParts[0];
-        string fileExtension = ".jpg";
-        string fileThumb = "_t";
-        //fileName = "owl" + ".jpg";        
+        }
+        else
+        {
+            return Redirect("/Error?errorFromCaller=" + errorMsg);
 
-        BlobContainerClient containerClient = new BlobContainerClient(StorageConnectionString, CocktailImageContainer);
-        BlobClient blobClient = containerClient.GetBlobClient(fileName + fileExtension);
-
-        ms.Position = 0;
-        await blobClient.UploadAsync(ms, OverWrite);
-
-        ms.Position = 0;
-        using Image UploadThumb = Image.ThumbnailStream(ms, width: 128, height: 128, crop: Enums.Interesting.Attention);
-        
-
-        blobClient = containerClient.GetBlobClient(fileName + fileThumb + fileExtension);
-        //await blobClient.UploadAsync("./images/thumb.jpg",OverWrite);
-        //UploadThumb.Close();
-        //UploadThumb
-        //ms_t.Position=0;       
-        UploadThumb.WriteToStream(ms_t, ".jpg");
-        ms_t.Position = 0;
-        await blobClient.UploadAsync(ms_t, OverWrite);
+        }
 
 
     }
 
-    public async Task UploadToStorage()
+    private async Task WritetoAzureStorage(MemoryStream _ms, string filename)
     {
         string StorageConnectionString = _configuration["AZURE_STORAGE_CONNECTION_STRING"];
         string CocktailImageContainer = _configuration["CocktailImageContainer"];
+        Boolean OverWrite = true;
+        var ms_t = new MemoryStream();
+        string fileThumb = "_t";
 
-        // Create a BlobServiceClient object which will be used to create a container client
-        //BlobServiceClient blobServiceClient = new BlobServiceClient(StorageConnectionString);
-        // Create the container and return a container client object
+        string trustedExtension = Path.GetExtension(filename).ToLowerInvariant();
+        string trustedFilenameOnly = Path.GetFileNameWithoutExtension(filename);
+        int allowedFileNameLength = trustedFilenameOnly.Length < 11 ? trustedFilenameOnly.Length : 10;
+        string shortFileName = trustedFilenameOnly.Substring(0, allowedFileNameLength);
+        string trustedNewFileName = Guid.NewGuid().ToString() + "-" + shortFileName;
+
         BlobContainerClient containerClient = new BlobContainerClient(StorageConnectionString, CocktailImageContainer);
+        BlobClient blobClient = containerClient.GetBlobClient(trustedNewFileName + trustedExtension);
 
+        _ms.Position = 0;
+        await blobClient.UploadAsync(_ms, OverWrite);
 
-        string localPath = "./images/";
-        string fileName = "cocktail" + Guid.NewGuid().ToString() + ".jpg";
-        string localFilePath = Path.Combine(localPath, fileName);
+        _ms.Position = 0;
+        using Image UploadThumb = Image.ThumbnailStream(_ms, width: 128, height: 128, crop: Enums.Interesting.Attention);
+        blobClient = containerClient.GetBlobClient(trustedNewFileName + fileThumb + trustedExtension);
 
-        fileName = "./images/empress.jpg";
-        if (System.IO.File.Exists(fileName))
+        UploadThumb.WriteToStream(ms_t, trustedExtension);
+        ms_t.Position = 0;
+        await blobClient.UploadAsync(ms_t, OverWrite);
+    }
+
+    private static readonly Dictionary<string, List<byte[]>> _fileSignature = new Dictionary<string, List<byte[]>>
         {
-            // To Do
+            { ".gif", new List<byte[]> { new byte[] { 0x47, 0x49, 0x46, 0x38 } } },
+            { ".png", new List<byte[]> { new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A } } },
+            { ".jpeg", new List<byte[]>
+                {
+                    new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 },
+                    new byte[] { 0xFF, 0xD8, 0xFF, 0xE2 },
+                    new byte[] { 0xFF, 0xD8, 0xFF, 0xE3 },
+                }
+            },
+            { ".jpg", new List<byte[]>
+                {
+                    new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 },
+                    new byte[] { 0xFF, 0xD8, 0xFF, 0xE1 },
+                    new byte[] { 0xFF, 0xD8, 0xFF, 0xE8 },
+                }
+            }
         };
 
-        // Get a reference to a blob
-        //fileName = "belvedere.jpg";
-        BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
-        await blobClient.UploadAsync(fileName, true);
+    private bool IsValidFileExtensionAndSignature(string fileName, Stream data, string[] permittedExtensions)
+    {
+        if (data == null || data.Length == 0)
+        {
+            errorMsg = "file empty";
+            return false;
+        }
 
+        var filenameonly = Path.GetFileNameWithoutExtension(fileName);
+        if (string.IsNullOrEmpty(filenameonly))
+        {
+            errorMsg = "file name not valid";
+            return false;
+        }
+
+        var ext = Path.GetExtension(fileName).ToLowerInvariant();
+        if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
+        {
+            errorMsg = "file extension not valid";
+            return false;
+        }
+
+        data.Position = 0;
+
+        using (var reader = new BinaryReader(data))
+        {
+            var signatures = _fileSignature[ext];
+            var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
+
+            bool fileSigCorrect = signatures.Any(signature =>
+                headerBytes.Take(signature.Length).SequenceEqual(signature));
+
+            errorMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
+
+            return fileSigCorrect;
+
+        }
     }
 }
 
