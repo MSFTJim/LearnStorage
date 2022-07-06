@@ -1,0 +1,29 @@
+﻿@page
+@model ImageAPIModel
+@{
+    ViewData["Title"] = "Call Image API";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Use this page to call a downstream API.</p>
+
+<div class="card justify-content-center" style="width: 50rem">
+    <div class="card-header">
+        This page calls an API
+    </div>
+    <div class="card-body" >
+    <form method="post">
+        <label for="baseUrl">@Model.apiUrl</label>
+        <input type="text" asp-for="APIRoute" placeholder="Tim"><br>
+        <br>
+        <br>
+        <button>Call API</button>        
+    </form>
+    </div>
+
+    <div class="card-body" >
+        <p> This is the message from the API: <b> @Model.myAPIMessage </p>
+    </div>
+
+</div>
+
