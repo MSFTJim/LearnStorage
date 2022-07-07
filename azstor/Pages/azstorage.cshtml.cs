@@ -4,12 +4,14 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using System.IO;
 using NetVips;
+using System.Net.Http.Headers;
 
 namespace azstor.Pages;
 
 
 public class azstorageModel : PageModel
 {
+    private HttpClient APIclient = new HttpClient();
     private readonly IConfiguration _configuration;
     private readonly long _fileSizeLimit;
     private string errorMsg = "All Good";
@@ -32,7 +34,7 @@ public class azstorageModel : PageModel
 
     public void OnGet()
     {
-       
+
 
     }
 
@@ -41,6 +43,8 @@ public class azstorageModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         var ms = new MemoryStream();
+        var ms2 = new MemoryStream();
+        
 
         if ((Upload.Length > 0) && (Upload.Length < _fileSizeLimit))
         {
@@ -54,10 +58,31 @@ public class azstorageModel : PageModel
             return Redirect("/Error?errorFromCaller=" + errorMsg);
         }
 
+         
 
         if (IsValidFileExtensionAndSignature(Upload.FileName, ms, permittedExtensions))
         {
-            await WritetoAzureStorage(ms,Upload.FileName);
+            await Upload.CopyToAsync(ms2);
+            var apiUrl = "http://localhost:5136/upload";
+            var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);            
+            
+            var formData = new MultipartFormDataContent();
+            ms2.Position = 0;
+            var streamContent = new StreamContent(ms2);
+            
+            streamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Upload.ContentType);  //Upload.ContentType = "image/jpg"
+            
+            formData.Add(streamContent);            
+
+            var response1 = await APIclient.PostAsync(apiUrl,formData);
+
+            if (response1.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                
+                var content = await response1.Content.ReadAsStreamAsync();
+            }
+
+            await WritetoAzureStorage(ms, Upload.FileName);
             return Redirect("/Index");
 
         }

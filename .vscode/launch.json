@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build imageAPI",
-            "program": "${workspaceFolder}/azstor/bin/Debug/net6.0/imageAPI.dll",
+            "program": "${workspaceFolder}/imageAPI/bin/Debug/net6.0/imageAPI.dll",
             "args": [],
             "cwd": "${workspaceFolder}/imageAPI",
             "stopAtEntry": false,
@@ -25,7 +25,7 @@
             "name": "WebApp",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            "preLaunchTask": "build azstor",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/azstor/bin/Debug/net6.0/azstor.dll",
             "args": [],

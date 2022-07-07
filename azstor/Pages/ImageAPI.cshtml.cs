@@ -41,6 +41,7 @@ public class ImageAPIModel : PageModel
 
         var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
         var response1 = await APIclient.SendAsync(request);
+        
 
         switch (response1.StatusCode)
         {

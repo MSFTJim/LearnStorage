@@ -13,8 +13,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
-// app.UseHttpsRedirection();
 
 var summaries = new[]
 {
@@ -23,7 +26,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateTime.Now.AddDays(index),
@@ -35,7 +38,53 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+app.MapPost("/upload", 
+    async Task<IResult> (HttpRequest request) =>
+        {
+            if (!request.HasFormContentType)
+                return Results.BadRequest();
+
+            var form = await request.ReadFormAsync();
+            var formFile = form.Files["file"];
+
+            if (formFile is null || formFile.Length == 0)
+                return Results.BadRequest();
+
+            await using var stream = formFile.OpenReadStream();
+
+            var reader = new StreamReader(stream);
+            var text = await reader.ReadToEndAsync();
+
+            return Results.Ok(text);
+        });
+
+var RouteHandler = new ImageHandler();
+app.MapPost("/ImageStor", RouteHandler.WriteImagetoStorage);
+
 app.Run();
+
+class ImageHandler
+{
+    public async Task<IResult> WriteImagetoStorage(HttpRequest request)
+    {
+         if (!request.HasFormContentType)
+                return Results.BadRequest();
+
+            var form = await request.ReadFormAsync();
+            var formFile = form.Files["file"];
+
+            if (formFile is null || formFile.Length == 0)
+                return Results.BadRequest();
+
+            await using var stream = formFile.OpenReadStream();
+
+            var reader = new StreamReader(stream);
+            var text = await reader.ReadToEndAsync();
+
+            return Results.Ok(text);
+        //return "Hello from the WriteImagetoStorage Instance method handler!";
+    }
+}
 
 record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
