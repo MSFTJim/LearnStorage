@@ -44,7 +44,7 @@ public class azstorageModel : PageModel
     {
         var ms = new MemoryStream();
         var ms2 = new MemoryStream();
-        
+
 
         if ((Upload.Length > 0) && (Upload.Length < _fileSizeLimit))
         {
@@ -58,27 +58,29 @@ public class azstorageModel : PageModel
             return Redirect("/Error?errorFromCaller=" + errorMsg);
         }
 
-         
+
 
         if (IsValidFileExtensionAndSignature(Upload.FileName, ms, permittedExtensions))
         {
             await Upload.CopyToAsync(ms2);
+            ms.Dispose();
+            await Upload.CopyToAsync(ms);
             var apiUrl = "http://localhost:5136/upload";
-            var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);            
-            
+            var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+
             var formData = new MultipartFormDataContent();
             ms2.Position = 0;
             var streamContent = new StreamContent(ms2);
-            
-            streamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Upload.ContentType);  //Upload.ContentType = "image/jpg"
-            
-            formData.Add(streamContent);            
 
-            var response1 = await APIclient.PostAsync(apiUrl,formData);
+            streamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Upload.ContentType);  //Upload.ContentType = "image/jpg"
+
+            formData.Add(streamContent);
+
+            var response1 = await APIclient.PostAsync(apiUrl, formData);
 
             if (response1.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                
+
                 var content = await response1.Content.ReadAsStreamAsync();
             }
 
@@ -169,7 +171,25 @@ public class azstorageModel : PageModel
 
         data.Position = 0;
 
-        using (var reader = new BinaryReader(data))
+
+
+        // using (var reader = new BinaryReader(data))
+        // {
+        //     var signatures = _fileSignature[ext];
+        //     var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
+
+        //     bool fileSigCorrect = signatures.Any(signature =>
+        //         headerBytes.Take(signature.Length).SequenceEqual(signature));
+
+        //     errorMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
+
+        //     return fileSigCorrect;
+
+        // }
+
+        var reader = new BinaryReader(data);
+        // return true;
+        try
         {
             var signatures = _fileSignature[ext];
             var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
@@ -178,10 +198,16 @@ public class azstorageModel : PageModel
                 headerBytes.Take(signature.Length).SequenceEqual(signature));
 
             errorMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
-
             return fileSigCorrect;
 
+
         }
+        finally
+        {
+           reader.Dispose();
+
+        }
+
     }
 }
 
