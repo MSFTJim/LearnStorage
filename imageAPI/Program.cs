@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Hosting;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -61,11 +63,15 @@ app.MapPost("/upload",
 var RouteHandler = new ImageHandler();
 app.MapPost("/ImageStor", RouteHandler.WriteImagetoStorage);
 
+string webRootPath = app.Environment.WebRootPath;
+
 app.Run();
+
+
 
 class ImageHandler
 {
-    public async Task<IResult> WriteImagetoStorage(HttpRequest request)
+    public async Task<IResult> WriteImagetoStorage(string webRootPath, HttpRequest request)
     {
          if (!request.HasFormContentType)
                 return Results.BadRequest();
@@ -80,6 +86,16 @@ class ImageHandler
 
             var reader = new StreamReader(stream);
             var text = await reader.ReadToEndAsync();
+            //var junk = AppCon
+
+            string uploadsFolder = Path.Combine(webRootPath, "images");
+            
+            
+            string filePath = Path.Combine(uploadsFolder, formFile.FileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    //ctImage.CopyTo(fileStream);
+                }
 
             return Results.Ok(text);
         //return "Hello from the WriteImagetoStorage Instance method handler!";

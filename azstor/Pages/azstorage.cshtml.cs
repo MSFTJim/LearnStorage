@@ -58,14 +58,40 @@ public class azstorageModel : PageModel
             return Redirect("/Error?errorFromCaller=" + errorMsg);
         }
 
+        // START of new process to just pass file to API
+
+        var apiUrl = "http://localhost:5136/ImageStor";
+        var myHttpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+
+        var myMultipartFormDataContentformData = new MultipartFormDataContent();
+        ms.Position = 0;
+        var myStreamContent = new StreamContent(ms);
+
+        myStreamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Upload.ContentType);  //Upload.ContentType = "image/jpg"
+
+        myMultipartFormDataContentformData.Add(myStreamContent,"file",Upload.FileName);
+
+        var response1 = await APIclient.PostAsync(apiUrl, myMultipartFormDataContentformData);
+
+        if (response1.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+
+            var content = await response1.Content.ReadAsStreamAsync();
+        }
+
+        await WritetoAzureStorage(ms, Upload.FileName);
+       // return Redirect("/Index");
+
+
+        // END of new process to just pass file to API
 
 
         if (IsValidFileExtensionAndSignature(Upload.FileName, ms, permittedExtensions))
         {
             await Upload.CopyToAsync(ms2);
-            ms.Dispose();
-            await Upload.CopyToAsync(ms);
-            var apiUrl = "http://localhost:5136/upload";
+            // ms.Dispose();
+            // await Upload.CopyToAsync(ms);
+           // var apiUrl = "http://localhost:5136/ImageStor";
             var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
 
             var formData = new MultipartFormDataContent();
@@ -76,7 +102,7 @@ public class azstorageModel : PageModel
 
             formData.Add(streamContent);
 
-            var response1 = await APIclient.PostAsync(apiUrl, formData);
+            // var response1 = await APIclient.PostAsync(apiUrl, formData);
 
             if (response1.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -204,7 +230,7 @@ public class azstorageModel : PageModel
         }
         finally
         {
-           reader.Dispose();
+            reader.Dispose();
 
         }
 
