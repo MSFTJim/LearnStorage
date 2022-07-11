@@ -12,9 +12,8 @@
 
 
 <form method="post" enctype="multipart/form-data">
-    <label for="FormData">Some data: </label>
-    <input type="text" asp-for="FormData" placeholder="Bobo likes to eat hoho">
-    @* <input type="text" id="FormData" placeholder="Bobo likes to eat hoho"> *@
+    <label for="baseUrl">@Model.apiUrl</label>
+    <input type="text" asp-for="APIRoute" placeholder="Tim"><br>
     <br>
     <br>
     @* <input type="file" id="Upload" /> *@

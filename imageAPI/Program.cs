@@ -40,11 +40,14 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-app.MapPost("/upload", 
-    async Task<IResult> (HttpRequest request) =>
+app.MapPost("/upload",
+    async Task<IResult> (IConfiguration config, HttpRequest request) =>
         {
             if (!request.HasFormContentType)
                 return Results.BadRequest();
+
+            var filePath = config["Dog"];
+
 
             var form = await request.ReadFormAsync();
             var formFile = form.Files["file"];
@@ -71,33 +74,42 @@ app.Run();
 
 class ImageHandler
 {
-    public async Task<IResult> WriteImagetoStorage(string webRootPath, HttpRequest request)
+    //private readonly IConfiguration _configuration;
+
+    public async Task<IResult> WriteImagetoStorage(IConfiguration config, HttpRequest request)
     {
-         if (!request.HasFormContentType)
-                return Results.BadRequest();
+        if (!request.HasFormContentType)
+            return Results.BadRequest();
 
-            var form = await request.ReadFormAsync();
-            var formFile = form.Files["file"];
+        // var form = await request.ReadFormAsync();
+        // var formFile = form.Files["file"];
 
-            if (formFile is null || formFile.Length == 0)
-                return Results.BadRequest();
+        string uploadsFolder = Path.Combine(config["Dog"], "images");
+        
+        // if (formFile is null || formFile.Length == 0)
+        //     return Results.BadRequest();
 
-            await using var stream = formFile.OpenReadStream();
+        string filePath = Path.Combine(uploadsFolder, "test.jpg");
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await request.BodyReader.CopyToAsync(fileStream);
 
-            var reader = new StreamReader(stream);
-            var text = await reader.ReadToEndAsync();
-            //var junk = AppCon
+        }
 
-            string uploadsFolder = Path.Combine(webRootPath, "images");
-            
-            
-            string filePath = Path.Combine(uploadsFolder, formFile.FileName);
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    //ctImage.CopyTo(fileStream);
-                }
+        // await using var stream = formFile.OpenReadStream();
 
-            return Results.Ok(text);
+        // var reader = new StreamReader(stream);
+        // var text = await reader.ReadToEndAsync();
+        //var junk = AppCon
+
+        
+
+        // await using var writeStream = File.Create(filePath);
+        // await request.BodyReader.CopyToAsync(writeStream);
+
+
+
+        return Results.Ok();
         //return "Hello from the WriteImagetoStorage Instance method handler!";
     }
 }

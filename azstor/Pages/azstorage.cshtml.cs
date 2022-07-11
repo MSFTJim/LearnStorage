@@ -16,6 +16,9 @@ public class azstorageModel : PageModel
     private readonly long _fileSizeLimit;
     private string errorMsg = "All Good";
     private string[] permittedExtensions = new string[] { ".gif", ".png", ".jpg", ".jpeg" };
+    [BindProperty]
+    public string? APIRoute { get; set; }
+    public string apiUrl { get; set; } = "http://127.0.0.1:5136/";
 
     public azstorageModel(IConfiguration configuration)
     {
@@ -60,7 +63,7 @@ public class azstorageModel : PageModel
 
         // START of new process to just pass file to API
 
-        var apiUrl = "http://localhost:5136/ImageStor";
+        apiUrl = apiUrl + APIRoute;
         var myHttpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
 
         var myMultipartFormDataContentformData = new MultipartFormDataContent();
@@ -69,7 +72,7 @@ public class azstorageModel : PageModel
 
         myStreamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Upload.ContentType);  //Upload.ContentType = "image/jpg"
 
-        myMultipartFormDataContentformData.Add(myStreamContent,"file",Upload.FileName);
+        myMultipartFormDataContentformData.Add(myStreamContent, "file", Upload.FileName);
 
         var response1 = await APIclient.PostAsync(apiUrl, myMultipartFormDataContentformData);
 
@@ -79,8 +82,8 @@ public class azstorageModel : PageModel
             var content = await response1.Content.ReadAsStreamAsync();
         }
 
-        await WritetoAzureStorage(ms, Upload.FileName);
-       // return Redirect("/Index");
+        //await WritetoAzureStorage(ms, Upload.FileName);
+         return Redirect("/Index");
 
 
         // END of new process to just pass file to API
@@ -91,7 +94,7 @@ public class azstorageModel : PageModel
             await Upload.CopyToAsync(ms2);
             // ms.Dispose();
             // await Upload.CopyToAsync(ms);
-           // var apiUrl = "http://localhost:5136/ImageStor";
+            // var apiUrl = "http://localhost:5136/ImageStor";
             var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
 
             var formData = new MultipartFormDataContent();
