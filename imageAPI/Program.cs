@@ -81,18 +81,23 @@ class ImageHandler
         if (!request.HasFormContentType)
             return Results.BadRequest();
 
-        // var form = await request.ReadFormAsync();
-        // var formFile = form.Files["file"];
+        var form = await request.ReadFormAsync();
+        var formFile = form.Files["file"];
 
         string uploadsFolder = Path.Combine(config["Dog"], "images");
         
-        // if (formFile is null || formFile.Length == 0)
-        //     return Results.BadRequest();
+        if (formFile is null || formFile.Length == 0)
+            return Results.BadRequest();
+        
+        await using var stream = formFile.OpenReadStream();
 
-        string filePath = Path.Combine(uploadsFolder, "test.jpg");
+        // var reader = new StreamReader(stream);
+        // var text = await reader.ReadToEndAsync();
+
+        string filePath = Path.Combine(uploadsFolder, formFile.FileName);
         using (var fileStream = new FileStream(filePath, FileMode.Create))
         {
-            await request.BodyReader.CopyToAsync(fileStream);
+            await stream.CopyToAsync(fileStream);
 
         }
 
