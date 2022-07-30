@@ -72,10 +72,8 @@ public class azstorageModel : PageModel
         myMultipartFormData.Add(myStreamContent, "file", Upload.FileName);
 
         var response1 = await APIclient.PostAsync(apiUrl, myMultipartFormData);
-            
-
         
-        if (response1.StatusCode == System.Net.HttpStatusCode.OK)                    
+        if (response1.StatusCode == System.Net.HttpStatusCode.OK)                                
             myAPIMessage = await response1.Content.ReadAsStringAsync();  
         else
             myAPIMessage = "HTTP Status Code Not OK!";

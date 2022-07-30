@@ -79,10 +79,7 @@ class ImageHandler
     {
         int dog = 0;
 
-        dog = TestMeth();
-       
-        
-        //NoContent("Boo!");
+        dog = TestMeth();        
 
         if (!request.HasFormContentType)
             return "No Form content Type";
