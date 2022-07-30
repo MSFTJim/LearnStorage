@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,12 +75,17 @@ app.Run();
 
 class ImageHandler
 {
-    //private readonly IConfiguration _configuration;
-
-    public async Task<IResult> WriteImagetoStorage(IConfiguration config, HttpRequest request)
+    public async Task<string> WriteImagetoStorage(IConfiguration config, HttpRequest request)
     {
+        int dog = 0;
+
+        dog = TestMeth();
+       
+        
+        //NoContent("Boo!");
+
         if (!request.HasFormContentType)
-            return Results.BadRequest();
+            return "No Form content Type";
 
         var form = await request.ReadFormAsync();
         var formFile = form.Files["file"];
@@ -87,7 +93,7 @@ class ImageHandler
         string uploadsFolder = Path.Combine(config["Dog"], "images");
         
         if (formFile is null || formFile.Length == 0)
-            return Results.BadRequest();
+            return "File size invalid";
         
         await using var stream = formFile.OpenReadStream();
 
@@ -100,26 +106,19 @@ class ImageHandler
             await stream.CopyToAsync(fileStream);
 
         }
-
-        // await using var stream = formFile.OpenReadStream();
-
-        // var reader = new StreamReader(stream);
-        // var text = await reader.ReadToEndAsync();
-        //var junk = AppCon
-
         
-
-        // await using var writeStream = File.Create(filePath);
-        // await request.BodyReader.CopyToAsync(writeStream);
-
-
-
-        return Results.Ok();
-        //return "Hello from the WriteImagetoStorage Instance method handler!";
+        return "API Process was good";
+       
     }
-}
+
+    private int TestMeth()
+    {
+        return 1;
+    }
+} //End Class ImageHandler
 
 record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
