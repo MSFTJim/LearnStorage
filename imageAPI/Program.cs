@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<OtherAPIFile>();
 
 var app = builder.Build();
 
@@ -69,17 +71,22 @@ app.MapPost("/ImageStor", RouteHandler.WriteImagetoStorage);
 
 string webRootPath = app.Environment.WebRootPath;
 
+using (var scope = app.Services.CreateScope())
+{
+    OtherAPIFile? service = scope.ServiceProvider.GetService<OtherAPIFile>();
+    // if (service is not null)
+        service.RegisterEmployeeAPIs(app);
+    
+}
+
 app.Run();
-
-
-
-class ImageHandler
+public class ImageHandler
 {
     public async Task<string> WriteImagetoStorage(IConfiguration config, HttpRequest request)
     {
         int dog = 0;
 
-        dog = TestMeth();        
+        dog = TestMeth();
 
         if (!request.HasFormContentType)
             return "No Form content Type";
@@ -88,10 +95,10 @@ class ImageHandler
         var formFile = form.Files["file"];
 
         string uploadsFolder = Path.Combine(config["Dog"], "images");
-        
+
         if (formFile is null || formFile.Length == 0)
             return "File size invalid";
-        
+
         await using var stream = formFile.OpenReadStream();
 
         // var reader = new StreamReader(stream);
@@ -103,9 +110,9 @@ class ImageHandler
             await stream.CopyToAsync(fileStream);
 
         }
-        
+
         return "API Process was good";
-       
+
     }
 
     private int TestMeth()
@@ -113,7 +120,6 @@ class ImageHandler
         return 1;
     }
 } //End Class ImageHandler
-
 record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
