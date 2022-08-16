@@ -15,7 +15,7 @@ public class azstorageModel : PageModel
     private HttpClient APIclient = new HttpClient();
     private readonly IConfiguration _configuration;
     private readonly long _fileSizeLimit;
-    //private string errorMsg = "All Good";
+    //private string returnMsg = "All Good";
     public string? myAPIMessage { get; set; }
     private string[] permittedExtensions = new string[] { ".gif", ".png", ".jpg", ".jpeg" };
     [BindProperty]
@@ -55,7 +55,7 @@ public class azstorageModel : PageModel
         else
         {
             myAPIMessage = "File size invalid";
-            // return Redirect("/Error?errorFromCaller=" + errorMsg);
+            // return Redirect("/Error?errorFromCaller=" + returnMsg);
         }
 
         // START of new process to just pass file to API
@@ -119,7 +119,7 @@ public class azstorageModel : PageModel
     //     }
     //     else
     //     {
-    //         return Redirect("/Error?errorFromCaller=" + errorMsg);
+    //         return Redirect("/Error?errorFromCaller=" + returnMsg);
 
     //     }
 
@@ -180,21 +180,21 @@ public class azstorageModel : PageModel
     // {
     //     if (data == null || data.Length == 0)
     //     {
-    //         errorMsg = "file empty";
+    //         returnMsg = "file empty";
     //         return false;
     //     }
 
     //     var filenameonly = Path.GetFileNameWithoutExtension(fileName);
     //     if (string.IsNullOrEmpty(filenameonly))
     //     {
-    //         errorMsg = "file name not valid";
+    //         returnMsg = "file name not valid";
     //         return false;
     //     }
 
     //     var ext = Path.GetExtension(fileName).ToLowerInvariant();
     //     if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
     //     {
-    //         errorMsg = "file extension not valid";
+    //         returnMsg = "file extension not valid";
     //         return false;
     //     }
 
@@ -210,7 +210,7 @@ public class azstorageModel : PageModel
     //     //     bool fileSigCorrect = signatures.Any(signature =>
     //     //         headerBytes.Take(signature.Length).SequenceEqual(signature));
 
-    //     //     errorMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
+    //     //     returnMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
 
     //     //     return fileSigCorrect;
 
@@ -226,7 +226,7 @@ public class azstorageModel : PageModel
     //         bool fileSigCorrect = signatures.Any(signature =>
     //             headerBytes.Take(signature.Length).SequenceEqual(signature));
 
-    //         errorMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
+    //         returnMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
     //         return fileSigCorrect;
 
 
