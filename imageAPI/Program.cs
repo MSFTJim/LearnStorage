@@ -45,24 +45,17 @@ public class ImageHandler
         var form = await request.ReadFormAsync();
         var formFile = form.Files["file"];
         string uploadsFolder = Path.Combine(config["Dog"], "images");
-        var cat = config.GetValue<long>("FileSizeLimit");
-
-        // if (formFile is null)
-        //     return "File is null";
-        // if (formFile.Length == 0)
-        //     return "File too small";
-        // if (formFile.Length < config.GetValue<long>("FileSizeLimit"))
-        //     return "File too big";
+        
         if (formFile is null || formFile.Length == 0 || formFile.Length > config.GetValue<long>("FileSizeLimit"))
             return "File size invalid";
 
         await using var stream = formFile.OpenReadStream();
 
         string filePath = Path.Combine(uploadsFolder, formFile.FileName);
+
         // using (var fileStream = new FileStream(filePath, FileMode.Create))
         // {
         //     await stream.CopyToAsync(fileStream);
-
         // }
 
         using (var ms = new MemoryStream())
@@ -178,7 +171,8 @@ private async Task WritetoAzureStorage(MemoryStream _ms, string filename, IConfi
         UploadThumb.WriteToStream(ms_t, trustedExtension);
         ms_t.Position = 0;
         await blobClient.UploadAsync(ms_t, OverWrite);
-    }
+        
+    }  // end of write to azure storage
 
 
 } //End Class ImageHandler
