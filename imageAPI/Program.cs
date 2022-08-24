@@ -65,6 +65,8 @@ public class ImageHandler
             if (IsValidFileExtensionAndSignature(formFile.FileName, ms, permittedExtensions))
             {
                 // call method to write to Azure storage
+                  await stream.CopyToAsync(ms);
+                await WritetoAzureStorage(ms, filePath, config);
             }
             else
             {
