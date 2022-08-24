@@ -1,5 +1,7 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using NetVips;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,35 +24,19 @@ else
 }
 
 var RouteHandler = new ImageHandler();
-app.MapPost("/ImageStor", RouteHandler.WriteImagetoStorage);
-
-app.MapPost("/upload", Bobo);
+app.MapPost("/ImageStor", RouteHandler.ProcessImageforStorage);
 
 string webRootPath = app.Environment.WebRootPath;
 
-
 app.Run();
 
-IResult Bobo()
-{
-    // method code goes here
-    int dog = 0;
-    dog = Hoho();
-    return Results.Ok("Hello from Bobo");
-
-}
-
-int Hoho()
-{
-    return 1;
-}
 
 public class ImageHandler
 {
 
     private string returnMsg = "Method Start";
     private string[] permittedExtensions = new string[] { ".gif", ".png", ".jpg", ".jpeg" };
-    public async Task<string> WriteImagetoStorage(IConfiguration config, HttpRequest request)
+    public async Task<string> ProcessImageforStorage(IConfiguration config, HttpRequest request)
     {
         if (!request.HasFormContentType)
             return "No Form content Type";
@@ -89,7 +75,7 @@ public class ImageHandler
             }
             else
             {
-                // return returnMsg;
+                return returnMsg;
             }
 
         }
@@ -122,7 +108,10 @@ public class ImageHandler
 
 
     private bool IsValidFileExtensionAndSignature(string fileName, Stream data, string[] permittedExtensions)
-    {
+    {        
+        returnMsg = "file check start";        
+
+        // this is generally checked by the file upload control itself - but we can double check it here
         if (data == null || data.Length == 0)
         {
             returnMsg = "file empty";
@@ -145,25 +134,7 @@ public class ImageHandler
 
         data.Position = 0;
 
-
-
-        // using (var reader = new BinaryReader(data))
-        // {
-        //     var signatures = _fileSignature[ext];
-        //     var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
-
-        //     bool fileSigCorrect = signatures.Any(signature =>
-        //         headerBytes.Take(signature.Length).SequenceEqual(signature));
-
-        //     returnMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
-
-        //     return fileSigCorrect;
-
-        // }
-
-        var reader = new BinaryReader(data);
-        // return true;
-        try
+        using (var reader = new BinaryReader(data))
         {
             var signatures = _fileSignature[ext];
             var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
@@ -172,16 +143,41 @@ public class ImageHandler
                 headerBytes.Take(signature.Length).SequenceEqual(signature));
 
             returnMsg = fileSigCorrect ? "file check good" : "file signiture invalid";
+
             return fileSigCorrect;
 
+        }       
 
-        }
-        finally
-        {
-            reader.Dispose();
+    } // End IsValidFileExtensionAndSignature
 
-        }
 
+private async Task WritetoAzureStorage(MemoryStream _ms, string filename, IConfiguration diConfiguration)
+    {
+        string StorageConnectionString = diConfiguration["AZURE_STORAGE_CONNECTION_STRING"];
+        string CocktailImageContainer = diConfiguration["CocktailImageContainer"];
+        Boolean OverWrite = true;
+        var ms_t = new MemoryStream();
+        string fileThumb = "_t";
+
+        string trustedExtension = Path.GetExtension(filename).ToLowerInvariant();
+        string trustedFilenameOnly = Path.GetFileNameWithoutExtension(filename);
+        int allowedFileNameLength = trustedFilenameOnly.Length < 11 ? trustedFilenameOnly.Length : 10;
+        string shortFileName = trustedFilenameOnly.Substring(0, allowedFileNameLength);
+        string trustedNewFileName = Guid.NewGuid().ToString() + "-" + shortFileName;
+
+        BlobContainerClient containerClient = new BlobContainerClient(StorageConnectionString, CocktailImageContainer);
+        BlobClient blobClient = containerClient.GetBlobClient(trustedNewFileName + trustedExtension);
+
+        _ms.Position = 0;
+        await blobClient.UploadAsync(_ms, OverWrite);
+
+        _ms.Position = 0;
+        using Image UploadThumb = Image.ThumbnailStream(_ms, width: 128, height: 128, crop: Enums.Interesting.Attention);
+        blobClient = containerClient.GetBlobClient(trustedNewFileName + fileThumb + trustedExtension);
+
+        UploadThumb.WriteToStream(ms_t, trustedExtension);
+        ms_t.Position = 0;
+        await blobClient.UploadAsync(ms_t, OverWrite);
     }
 
 
