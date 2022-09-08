@@ -62,10 +62,12 @@ public class ImageHandler
         {
             await stream.CopyToAsync(ms);
 
+            // bool CheckMate = IsValidFileExtensionAndSignature(formFile.FileName, ms, permittedExtensions).Result;
+
             if (IsValidFileExtensionAndSignature(formFile.FileName, ms, permittedExtensions))
             {
                 // call method to write to Azure storage
-                  await stream.CopyToAsync(ms);
+                await stream.CopyToAsync(ms);
                 await WritetoAzureStorage(ms, filePath, config);
             }
             else
@@ -102,9 +104,13 @@ public class ImageHandler
         };
 
 
-    private bool IsValidFileExtensionAndSignature(string fileName, Stream data, string[] permittedExtensions)
+    public bool IsValidFileExtensionAndSignature(string fileName, MemoryStream streamParam, string[] permittedExtensions)
     {        
         returnMsg = "file check start";        
+
+        MemoryStream data = new MemoryStream();
+        streamParam.Position =0;
+        streamParam.CopyTo(data);
 
         // this is generally checked by the file upload control itself - but we can double check it here
         if (data == null || data.Length == 0)
