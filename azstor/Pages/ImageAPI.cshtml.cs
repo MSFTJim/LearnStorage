@@ -21,7 +21,8 @@ public class ImageAPIModel : PageModel
     }
 
     public string? myAPIMessage { get; set; }
-    public string apiUrl { get; set; } = "http://127.0.0.1:5136/";
+    public string apiBase { get; set; } = "http://127.0.0.1:5136/";
+    public string? apiUrl { get; set; }
 
     [BindProperty]
     public string? APIRoute { get; set; }
@@ -36,7 +37,7 @@ public class ImageAPIModel : PageModel
         // var apiUrl = "http://127.0.0.1:5136/";
         // apiUrl = "http://localhost:5136/";
 
-        apiUrl = apiUrl + APIRoute;                
+        apiUrl = apiBase + APIRoute;                
         // apiUrl = apiUrl + "weatherforcast";                
 
         var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
