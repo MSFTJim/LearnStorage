@@ -1,0 +1,13 @@
+wget https://download.visualstudio.microsoft.com/download/pr/f5c74056-330b-452b-915e-d98fda75024e/18076ca3b89cd362162bbd0cbf9b2ca5/dotnet-sdk-7.0.100-rc.2.22477.23-linux-x64.tar.gz 
+
+DOTNET_FILE=dotnet-sdk-7.0.100-rc.2.22477.23-linux-x64.tar.gz
+export DOTNET_ROOT=$(pwd)/.dotnet
+
+mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"
+
+dotnet --list-sdks
+
+echo $PATH
+echo $(pwd)
+
+https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh
