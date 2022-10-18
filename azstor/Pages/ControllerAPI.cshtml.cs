@@ -7,7 +7,7 @@ using NetVips;
 
 namespace azstor.Pages;
 
-public class ImageAPIModel : PageModel
+public class ControllerAPIModel : PageModel
 {
     private HttpClient APIclient = new HttpClient();
 
@@ -15,13 +15,13 @@ public class ImageAPIModel : PageModel
 
     private readonly ILogger<PrivacyModel> _logger;
 
-    public ImageAPIModel(ILogger<PrivacyModel> logger)
+    public ControllerAPIModel(ILogger<PrivacyModel> logger)
     {
         _logger = logger;
     }
 
     public string? myAPIMessage { get; set; }
-    public string apiBase { get; set; } = "http://127.0.0.1:5136/";
+    public string apiBase { get; set; } = "http://127.0.0.1:5059/";
     public string? apiUrl { get; set; }
 
     [BindProperty]

@@ -10,7 +10,7 @@ using System.Text.Json;
 namespace azstor.Pages;
 
 
-public class azstorageModel : PageModel
+public class MinimalAPIModel : PageModel
 {
     private HttpClient APIclient = new HttpClient();
     private readonly IConfiguration _configuration;
@@ -22,7 +22,7 @@ public class azstorageModel : PageModel
     public string? APIRoute { get; set; }
     public string apiUrl { get; set; } = "http://127.0.0.1:5136/";
 
-    public azstorageModel(IConfiguration configuration)
+    public MinimalAPIModel(IConfiguration configuration)
     {
         _configuration = configuration;
         _fileSizeLimit = _configuration.GetValue<long>("FileSizeLimit");
