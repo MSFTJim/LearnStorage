@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NetVips;
@@ -13,19 +14,27 @@ public class ControllerAPIModel : PageModel
 
     // private readonly IConfiguration _configuration;
 
-    private readonly ILogger<PrivacyModel> _logger;
+    private readonly ILogger _LOCALlogger;
+    private readonly IConfiguration _configuration;
+    private readonly long _fileSizeLimit;
 
-    public ControllerAPIModel(ILogger<PrivacyModel> logger)
+    public ControllerAPIModel(ILogger DIlogger, IConfiguration configuration)
     {
-        _logger = logger;
+        _LOCALlogger = DIlogger;
+        _configuration = configuration;
+        _fileSizeLimit = _configuration.GetValue<long>("FileSizeLimit");
     }
 
     public string? myAPIMessage { get; set; }
     public string apiBase { get; set; } = "http://127.0.0.1:5059/";
     public string? apiUrl { get; set; }
 
+
     [BindProperty]
     public string? APIRoute { get; set; }
+
+    [BindProperty]
+    public IFormFile Upload { get; set; } = null!;
 
     public void OnGet()
     {
@@ -34,15 +43,37 @@ public class ControllerAPIModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        // var apiUrl = "http://127.0.0.1:5136/";
-        // apiUrl = "http://localhost:5136/";
+        var ms = new MemoryStream();
 
-        apiUrl = apiBase + APIRoute;                
-        // apiUrl = apiUrl + "weatherforcast";                
+        if ((Upload.Length > 0) && (Upload.Length < _fileSizeLimit))
+        {
+            await Upload.CopyToAsync(ms);
+            myAPIMessage = "Process was good";
+        }
+        else
+        {
+            myAPIMessage = "File size invalid";
+        }
 
-        var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
-        var response1 = await APIclient.SendAsync(request);
-        
+        // START of new process to just pass file to API
+
+        apiUrl = apiBase + APIRoute;
+
+        // var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+        // var response1 = await APIclient.SendAsync(request);
+
+        var myHttpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+
+        var myMultipartFormData = new MultipartFormDataContent();
+        ms.Position = 0;
+        var myStreamContent = new StreamContent(ms);
+
+        myStreamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Upload.ContentType);  //Upload.ContentType = "image/jpg"
+
+        myMultipartFormData.Add(myStreamContent, "file", Upload.FileName);
+
+        var response1 = await APIclient.PostAsync(apiUrl, myMultipartFormData);
+
 
         switch (response1.StatusCode)
         {

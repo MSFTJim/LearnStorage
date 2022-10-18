@@ -54,8 +54,7 @@ public class MinimalAPIModel : PageModel
         }
         else
         {
-            myAPIMessage = "File size invalid";
-            // return Redirect("/Error?errorFromCaller=" + returnMsg);
+            myAPIMessage = "File size invalid";    
         }
 
         // START of new process to just pass file to API
