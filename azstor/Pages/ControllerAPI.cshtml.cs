@@ -14,13 +14,13 @@ public class ControllerAPIModel : PageModel
 
     // private readonly IConfiguration _configuration;
 
-    private readonly ILogger _LOCALlogger;
+    private readonly ILogger _logger;
     private readonly IConfiguration _configuration;
     private readonly long _fileSizeLimit;
 
-    public ControllerAPIModel(ILogger DIlogger, IConfiguration configuration)
+    public ControllerAPIModel(ILogger<ControllerAPIModel> logger, IConfiguration configuration)
     {
-        _LOCALlogger = DIlogger;
+        _logger = logger;
         _configuration = configuration;
         _fileSizeLimit = _configuration.GetValue<long>("FileSizeLimit");
     }

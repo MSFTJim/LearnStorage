@@ -22,11 +22,22 @@ public class Duck : ControllerBase
 
         }
 
-    [HttpGet("GetDucky2")]  
-     
+    [HttpGet("GetDucky2")]       
     public string GetDucky2()
     {
         return "Ducky2!!";
+
+        }
+
+    [HttpPost]       
+    public string FileUpload(IFormFile file)
+    {
+        int dog = 0;
+        if (file.Length > 0)
+            dog++;
+
+        
+        return "File Upload Endpoint Success.";
 
         }
 }
