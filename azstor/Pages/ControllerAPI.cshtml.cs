@@ -1,6 +1,8 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NetVips;
@@ -28,6 +30,13 @@ public class ControllerAPIModel : PageModel
     public string? myAPIMessage { get; set; }
     public string apiBase { get; set; } = "http://127.0.0.1:5059/";
     public string? apiUrl { get; set; }
+
+    public class Item {
+
+         public int Id { get; set; }
+        public string? Name { get; set; }
+
+    }
 
 
     [BindProperty]
@@ -71,6 +80,16 @@ public class ControllerAPIModel : PageModel
         myStreamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Upload.ContentType);  //Upload.ContentType = "image/jpg"
 
         myMultipartFormData.Add(myStreamContent, "file", Upload.FileName);
+
+        Item myItem = new();
+        myItem.Id = 5;
+        myItem.Name = "Notary";
+
+        var jsonItem = JsonSerializer.Serialize(myItem);
+        // var httpContent = new StringContent(jsonItem, Encoding.UTF8, "application/json");
+
+        myMultipartFormData.Add(new StringContent(jsonItem,Encoding.UTF8, "application/json"), name:"jsonData");
+
 
         var response1 = await APIclient.PostAsync(apiUrl, myMultipartFormData);
 
