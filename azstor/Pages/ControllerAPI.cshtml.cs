@@ -25,19 +25,23 @@ public class ControllerAPIModel : PageModel
         _logger = logger;
         _configuration = configuration;
         _fileSizeLimit = _configuration.GetValue<long>("FileSizeLimit");
+      
     }
 
     public string? myAPIMessage { get; set; }
     public string apiBase { get; set; } = "http://127.0.0.1:5059/";
     public string? apiUrl { get; set; }
 
-    public class Item {
-
-         public int Id { get; set; }
+    public class Item
+    {
         public string? Name { get; set; }
+        public string? Desc { get; set; }       
+        public DateTime? EventDate { get; set; }
 
     }
-
+  
+    
+    public Item thisItem = new();
 
     [BindProperty]
     public string? APIRoute { get; set; }
@@ -48,6 +52,7 @@ public class ControllerAPIModel : PageModel
     public void OnGet()
     {
         APIRoute = "Cocktail";
+        thisItem.Name = "Hello";
 
     }
 
@@ -69,9 +74,6 @@ public class ControllerAPIModel : PageModel
 
         apiUrl = apiBase + APIRoute;
 
-        // var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
-        // var response1 = await APIclient.SendAsync(request);
-
         var myHttpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
 
         var myMultipartFormData = new MultipartFormDataContent();
@@ -83,13 +85,15 @@ public class ControllerAPIModel : PageModel
         myMultipartFormData.Add(myStreamContent, "file", Upload.FileName);
 
         Item myItem = new();
-        myItem.Id = 5;
+        myItem.Desc = "";
         myItem.Name = "Notary";
+
+        
 
         var jsonItem = JsonSerializer.Serialize(myItem);
         // var httpContent = new StringContent(jsonItem, Encoding.UTF8, "application/json");
 
-        myMultipartFormData.Add(new StringContent(jsonItem,Encoding.UTF8, "application/json"), name:"jsonData");
+        myMultipartFormData.Add(new StringContent(jsonItem, Encoding.UTF8, "application/json"), name: "jsonData");
 
 
         var response1 = await APIclient.PostAsync(apiUrl, myMultipartFormData);
