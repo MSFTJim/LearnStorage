@@ -12,7 +12,7 @@ namespace C_API.Controllers;
 
 [ApiController]
 //[Route("[controller]")]
-[Route("Tim")]
+[Route("Cocktail")]
 public class Duck : ControllerBase
 {
     private readonly ILogger<Duck> _logger;

@@ -47,6 +47,7 @@ public class ControllerAPIModel : PageModel
 
     public void OnGet()
     {
+        APIRoute = "Cocktail";
 
     }
 
