@@ -164,7 +164,10 @@ private async Task WritetoAzureStorage(MemoryStream _ms, string filename, IConfi
         string trustedFilenameOnly = Path.GetFileNameWithoutExtension(filename);
         int allowedFileNameLength = trustedFilenameOnly.Length < 11 ? trustedFilenameOnly.Length : 10;
         string shortFileName = trustedFilenameOnly.Substring(0, allowedFileNameLength);
-        string trustedNewFileName = Guid.NewGuid().ToString() + "-" + shortFileName;
+        // string trustedNewFileName = Guid.NewGuid().ToString() + "-" + shortFileName;
+        string trustedNGuid =  Guid.NewGuid().ToString();
+        string trustedNewFileName =  shortFileName + "-" + trustedNGuid;
+        string trustedNewFileNameThumb =  shortFileName + fileThumb + "-" + trustedNGuid;
 
         BlobContainerClient containerClient = new BlobContainerClient(StorageConnectionString, CocktailImageContainer);
         BlobClient blobClient = containerClient.GetBlobClient(trustedNewFileName + trustedExtension);
@@ -174,7 +177,7 @@ private async Task WritetoAzureStorage(MemoryStream _ms, string filename, IConfi
 
         _ms.Position = 0;
         using Image UploadThumb = Image.ThumbnailStream(_ms, width: 128, height: 128, crop: Enums.Interesting.Attention);
-        blobClient = containerClient.GetBlobClient(trustedNewFileName + fileThumb + trustedExtension);
+        blobClient = containerClient.GetBlobClient(trustedNewFileNameThumb + trustedExtension);
 
         UploadThumb.WriteToStream(ms_t, trustedExtension);
         ms_t.Position = 0;
