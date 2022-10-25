@@ -29,7 +29,8 @@ public class ControllerAPIModel : PageModel
     }
 
     public string? myAPIMessage { get; set; }
-    public string apiBase { get; set; } = "http://127.0.0.1:5059/";
+    //public string apiBase { get; set; } = "http://127.0.0.1:5059/";
+    public string apiBase { get; set; } = "http://127.0.0.1:5026/";
     public string? apiUrl { get; set; }
 
     public class Item

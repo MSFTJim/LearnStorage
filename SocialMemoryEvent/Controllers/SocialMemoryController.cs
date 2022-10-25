@@ -23,19 +23,23 @@ public class SocialMemoryController : ControllerBase
     [HttpPost]
     public string SocialMemoryUpload()
     {
-        int dog = 0;
-
-
         HttpRequest multipartRequest = HttpContext.Request;
 
         string jsonData = multipartRequest.Form["jsonData"];
 
         // myItem = JsonSerializer.Deserialize<Item>(jsonData);
 
-        dog++;
-
+        TestMethod();
 
         return "File Upload Endpoint Success.";
+
+    }
+
+    public void TestMethod()
+    {
+        int dog=0;
+
+        dog++;
 
     }
 
