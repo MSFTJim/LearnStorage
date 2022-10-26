@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SocialMemoryEvent.Services;
 
 namespace SocialMemoryEvent.Controllers;
 
@@ -8,10 +9,12 @@ public class SocialMemoryController : ControllerBase
 {
 
     private readonly ILogger<SocialMemoryController> _logger;
+    private readonly IConfiguration _config;
 
-    public SocialMemoryController(ILogger<SocialMemoryController> logger)
+    public SocialMemoryController(ILogger<SocialMemoryController> logger, IConfiguration config)
     {
         _logger = logger;
+        _config = config;
     }
 
     [HttpGet(Name = "GetSocialMemory")]
@@ -38,8 +41,11 @@ public class SocialMemoryController : ControllerBase
     public void TestMethod()
     {
         int dog=0;
-
+        AzStorage Cosmo = new(_config);
+ 
+        
         dog++;
+
 
     }
 

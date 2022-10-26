@@ -5,9 +5,9 @@ namespace SocialMemoryEvent.Models
     public class Item : IComparable<Item>, IEquatable<Item>
     {
         public int Id { get; set; }        
-        public string? Name { get; set; } //= null;
-        public decimal Price { get; set; }
-        public decimal Rating { get; set; }
+        public string? MemoryDescrition { get; set; } //= null;
+        public string? MemoryLocation { get; set; }
+        public DateOnly MemoryDate { get; set; }
         public string? ImagePath { get; set; } //= string.Empty;
 
          public bool Equals(Item? other)
@@ -27,7 +27,7 @@ namespace SocialMemoryEvent.Models
 
         public override string ToString()
         {
-            return "Id: " + Id + ", Name: " + Name + ", Price: " + Price + ", Rating: " + Rating;
+            return "Id: " + Id + ", Desc: " + MemoryDescrition + ", Location: " + MemoryLocation + ", When: " + MemoryDate;
         }
 
 
