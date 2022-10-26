@@ -9,12 +9,14 @@ public class SocialMemoryController : ControllerBase
 {
 
     private readonly ILogger<SocialMemoryController> _logger;
+    private readonly ILogger<AzStorage> _AzStoragelogger;
     private readonly IConfiguration _config;
 
-    public SocialMemoryController(ILogger<SocialMemoryController> logger, IConfiguration config)
+    public SocialMemoryController(ILogger<SocialMemoryController> logger, ILogger<AzStorage> logger2, IConfiguration config)
     {
         _logger = logger;
         _config = config;
+        _AzStoragelogger = logger2;
     }
 
     [HttpGet(Name = "GetSocialMemory")]
@@ -32,19 +34,21 @@ public class SocialMemoryController : ControllerBase
 
         // myItem = JsonSerializer.Deserialize<Item>(jsonData);
 
-        TestMethod();
+        _logger.LogInformation("SocialMemoryUpload  {DT}", 
+            DateTime.UtcNow.ToLongTimeString());
+        LocalTestMethod();
 
         return "File Upload Endpoint Success.";
 
     }
 
-    public void TestMethod()
+    public void LocalTestMethod()
     {
-        int dog=0;
-        AzStorage Cosmo = new(_config);
- 
+        string dog="";
+        AzStorage Cosmo = new(_AzStoragelogger, _config);
+        dog = Cosmo.AzStorageTestMethod(); 
         
-        dog++;
+        
 
 
     }
